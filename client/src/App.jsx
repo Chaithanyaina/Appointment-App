@@ -1,55 +1,34 @@
 import React from 'react';
-import { Routes, Route, Link, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { AnimatePresence } from 'framer-motion';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
+import Navbar from './components/Navbar';
 
 function App() {
-  const { isAuthenticated, user, logout } = useAuth();
+  const location = useLocation();
 
   return (
+    // No more complex divs, just the core layout
     <>
-      <nav>
-        {isAuthenticated ? (
-          <>
-            {user?.role === 'admin' ? (
-              <Link to="/admin">Admin Home</Link>
-            ) : (
-              <Link to="/dashboard">Dashboard</Link>
-            )}
-            <button onClick={logout}>Logout</button>
-          </>
-        ) : (
-          <>
-            <Link to="/login">Login</Link>
-            <Link to="/register">Register</Link>
-          </>
-        )}
-      </nav>
-      <main>
-        <Routes>
-          <Route path="/" element={isAuthenticated ? (user?.role === 'admin' ? <Navigate to="/admin" /> : <Navigate to="/dashboard" />) : <Navigate to="/login" />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/admin" element={
-            <ProtectedRoute adminOnly={true}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          } />
-
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+      <Navbar />
+      <Toaster position="bottom-right" reverseOrder={false} />
+      <main className="container mx-auto px-4 py-8">
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute adminOnly={true}><AdminDashboard /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AnimatePresence>
       </main>
     </>
   );

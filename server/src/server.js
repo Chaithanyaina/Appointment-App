@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import { rateLimit } from 'express-rate-limit';
 import connectDB from './db.js';
 import User from './models/User.js';
 import authRoutes from './routes/authRoutes.js';
@@ -10,7 +11,7 @@ import bookingRoutes from './routes/bookingRoutes.js';
 const app = express();
 connectDB();
 
-// Seed Admin User
+// Seed Admin User (No changes)
 const seedAdmin = async () => {
   try {
     const adminExists = await User.findOne({ email: process.env.ADMIN_EMAIL });
@@ -35,8 +36,18 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Security: Apply rate limiting to all API requests
+const limiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	limit: 100, // Limit each IP to 100 requests per `window`
+	standardHeaders: 'draft-7',
+	legacyHeaders: false, 
+});
+app.use('/api', limiter);
+
+
 // Routes
-app.get('/api', (req, res) => res.send('API is running...'));
+app.get('/health', (req, res) => res.send('API is healthy and running!')); // Health check
 app.use('/api', authRoutes);
 app.use('/api', bookingRoutes);
 

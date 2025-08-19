@@ -13,9 +13,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (token) {
       try {
-        // Decode token to get user info without verifying on the client
         const decoded = JSON.parse(atob(token.split('.')[1]));
-        setUser({ role: decoded.role, id: decoded.id });
+        setUser({ role: decoded.role, id: decoded.id, name: decoded.name });
       } catch (e) {
         console.error("Invalid token:", e);
         logout();
@@ -33,7 +32,8 @@ export const AuthProvider = ({ children }) => {
     if (user.role === 'admin') {
       navigate('/admin');
     } else {
-      navigate('/dashboard');
+      // FIX: Navigate to the correct root path for the dashboard
+      navigate('/');
     }
   };
   
