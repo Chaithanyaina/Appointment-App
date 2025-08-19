@@ -1,11 +1,10 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const connectDB = require('./db');
-const User = require('./models/User');
-
-const authRoutes = require('./routes/authRoutes');
-const bookingRoutes = require('./routes/bookingRoutes');
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import connectDB from './db.js';
+import User from './models/User.js';
+import authRoutes from './routes/authRoutes.js';
+import bookingRoutes from './routes/bookingRoutes.js';
 
 // Initialize App
 const app = express();
@@ -31,7 +30,9 @@ const seedAdmin = async () => {
 seedAdmin();
 
 // Middleware
-app.use(cors({ origin: process.env.FRONTEND_URL }));
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+}));
 app.use(express.json());
 
 // Routes

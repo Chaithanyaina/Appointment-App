@@ -1,10 +1,10 @@
-const express = require('express');
-const moment = require('moment-timezone');
-const Booking = require('../models/Booking');
-const { protect, isAdmin } = require('../middleware/auth');
+import express from 'express';
+import moment from 'moment-timezone';
+import Booking from '../models/Booking.js';
+import { protect, isAdmin } from '../middleware/auth.js';
+
 const router = express.Router();
 
-// GET /api/slots?from=YYYY-MM-DD&to=YYYY-MM-DD
 router.get('/slots', async (req, res) => {
   const { from, to } = req.query;
   if (!from || !to) {
@@ -24,7 +24,6 @@ router.get('/slots', async (req, res) => {
     let currentDay = fromDate.clone();
     
     while (currentDay.isBefore(toDate)) {
-        // Clinic hours: 9:00 to 17:00 UTC
         const clinicOpen = currentDay.clone().hour(9).minute(0).second(0);
         const clinicClose = currentDay.clone().hour(17).minute(0).second(0);
 
@@ -49,7 +48,6 @@ router.get('/slots', async (req, res) => {
   }
 });
 
-// POST /api/book
 router.post('/book', protect, async (req, res) => {
     const { slotId } = req.body;
     if (!slotId) {
@@ -71,14 +69,13 @@ router.post('/book', protect, async (req, res) => {
         res.status(201).json(newBooking);
 
     } catch (error) {
-        if (error.code === 11000) { // MongoDB duplicate key error
+        if (error.code === 11000) {
             return res.status(409).json({ error: { code: 'SLOT_TAKEN', message: 'This slot has already been booked.' } });
         }
         res.status(500).json({ error: { code: 'SERVER_ERROR', message: 'Failed to book slot.' } });
     }
 });
 
-// GET /api/my-bookings
 router.get('/my-bookings', protect, async (req, res) => {
     try {
         const bookings = await Booking.find({ userId: req.user._id }).sort({ slotStartTime: 'asc' });
@@ -88,7 +85,6 @@ router.get('/my-bookings', protect, async (req, res) => {
     }
 });
 
-// GET /api/all-bookings
 router.get('/all-bookings', protect, isAdmin, async (req, res) => {
     try {
         const bookings = await Booking.find({}).sort({ slotStartTime: 'asc' });
@@ -98,4 +94,4 @@ router.get('/all-bookings', protect, isAdmin, async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;
